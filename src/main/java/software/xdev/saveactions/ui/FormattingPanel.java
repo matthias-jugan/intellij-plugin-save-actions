@@ -4,6 +4,7 @@ import static software.xdev.saveactions.model.Action.organizeImports;
 import static software.xdev.saveactions.model.Action.rearrange;
 import static software.xdev.saveactions.model.Action.reformat;
 import static software.xdev.saveactions.model.Action.reformatChangedCode;
+import static software.xdev.saveactions.model.Action.reformatChangedSurroundings;
 
 import java.awt.Dimension;
 import java.util.Map;
@@ -37,6 +38,7 @@ class FormattingPanel
 		panel.add(this.checkboxes.get(organizeImports));
 		panel.add(this.checkboxes.get(reformat));
 		panel.add(this.checkboxes.get(reformatChangedCode));
+		panel.add(this.checkboxes.get(reformatChangedSurroundings));
 		panel.add(this.checkboxes.get(rearrange));
 		panel.add(Box.createHorizontalGlue());
 		panel.setMinimumSize(new Dimension(Short.MAX_VALUE, 0));

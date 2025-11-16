@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 
 import software.xdev.saveactions.core.ExecutionMode;
+import software.xdev.saveactions.core.filter.InspectionFilter;
 import software.xdev.saveactions.model.Action;
 
 
@@ -22,7 +23,7 @@ public interface Processor
 	
 	int getOrder();
 	
-	SaveCommand getSaveCommand(Project project, Set<PsiFile> psiFiles);
+	SaveCommand getSaveCommand(Project project, Set<PsiFile> psiFiles, InspectionFilter filter);
 	
 	class OrderComparator implements Comparator<Processor>
 	{

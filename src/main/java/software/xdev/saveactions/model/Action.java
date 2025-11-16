@@ -41,6 +41,10 @@ public enum Action
 	reformatChangedCode("Reformat only changed code (only if VCS configured)",
 		global, false),
 	
+	reformatChangedSurroundings(
+		"Reformat only changed code and surroundings",
+		global, false),
+	
 	rearrange("Rearrange fields and methods "
 		+ "(configured in \"File > Settings > Editor > Code Style > (...) > Arrangement\")",
 		global, false),

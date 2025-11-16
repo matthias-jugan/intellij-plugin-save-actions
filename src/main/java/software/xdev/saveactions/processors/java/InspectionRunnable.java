@@ -21,6 +21,7 @@ import com.intellij.openapi.project.IndexNotReadyException;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 
+import software.xdev.saveactions.core.filter.InspectionFilter;
 import software.xdev.saveactions.core.service.SaveActionsService;
 
 
@@ -34,12 +35,18 @@ class InspectionRunnable implements Runnable
 	private final Project project;
 	private final Set<PsiFile> psiFiles;
 	private final InspectionToolWrapper<LocalInspectionTool, LocalInspectionEP> toolWrapper;
+	private final InspectionFilter filter;
 	
-	InspectionRunnable(final Project project, final Set<PsiFile> psiFiles, final LocalInspectionTool inspectionTool)
+	InspectionRunnable(
+		final Project project,
+		final Set<PsiFile> psiFiles,
+		final LocalInspectionTool inspectionTool,
+		final InspectionFilter filter)
 	{
 		this.project = project;
 		this.psiFiles = psiFiles;
 		this.toolWrapper = new LocalInspectionToolWrapper(inspectionTool);
+		this.filter = filter;
 		LOGGER.info(String.format("Running inspection for %s - %s", inspectionTool.getShortName(), project.getName()));
 	}
 	
@@ -57,7 +64,10 @@ class InspectionRunnable implements Runnable
 	{
 		try
 		{
-			return InspectionEngine.runInspectionOnFile(psiFile, this.toolWrapper, context);
+			final List<ProblemDescriptor> descriptors =
+				InspectionEngine.runInspectionOnFile(psiFile, this.toolWrapper, context);
+			final List<ProblemDescriptor> filtered = this.filter.filter(descriptors, psiFile);
+			return filtered;
 		}
 		catch(final IndexNotReadyException exception)
 		{

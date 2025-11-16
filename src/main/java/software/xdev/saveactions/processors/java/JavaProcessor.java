@@ -30,6 +30,7 @@ import com.siyeh.ig.style.UnqualifiedMethodAccessInspection;
 import com.siyeh.ig.style.UnqualifiedStaticUsageInspection;
 
 import software.xdev.saveactions.core.ExecutionMode;
+import software.xdev.saveactions.core.filter.InspectionFilter;
 import software.xdev.saveactions.model.Action;
 import software.xdev.saveactions.processors.Processor;
 import software.xdev.saveactions.processors.SaveWriteCommand;
@@ -163,10 +164,13 @@ public enum JavaProcessor implements Processor
 	}
 	
 	@Override
-	public SaveWriteCommand getSaveCommand(final Project project, final Set<PsiFile> psiFiles)
+	public SaveWriteCommand getSaveCommand(
+		final Project project,
+		final Set<PsiFile> psiFiles,
+		final InspectionFilter filter)
 	{
 		final BiFunction<Project, PsiFile[], Runnable> command =
-			(p, f) -> new InspectionRunnable(project, psiFiles, this.getInspection());
+			(p, f) -> new InspectionRunnable(project, psiFiles, this.getInspection(), filter);
 		return new SaveWriteCommand(project, psiFiles, this.getModes(), this.getAction(), command);
 	}
 	

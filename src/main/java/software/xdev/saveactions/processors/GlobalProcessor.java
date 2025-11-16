@@ -1,7 +1,11 @@
 package software.xdev.saveactions.processors;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -16,10 +20,15 @@ import com.intellij.codeInsight.CodeInsightBundle;
 import com.intellij.codeInsight.actions.OptimizeImportsProcessor;
 import com.intellij.codeInsight.actions.RearrangeCodeProcessor;
 import com.intellij.codeInsight.actions.ReformatCodeProcessor;
+import com.intellij.codeInsight.actions.VcsFacade;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.codeStyle.ChangedRangesInfo;
 
 import software.xdev.saveactions.core.ExecutionMode;
+import software.xdev.saveactions.core.filter.InspectionFilter;
+import software.xdev.saveactions.core.filter.SmartVcsFilter;
 import software.xdev.saveactions.model.Action;
 
 
@@ -38,6 +47,10 @@ public enum GlobalProcessor implements Processor
 	reformatChangedCode(
 		Action.reformatChangedCode,
 		(project, psiFiles) -> reformatCode(project, psiFiles, true)),
+	
+	reformatChangedSurroundings(
+		Action.reformatChangedSurroundings,
+		(project, psiFiles) -> reformatSurroundings(psiFiles)),
 	
 	rearrange(Action.rearrange, GlobalProcessor::rearrangeCode);
 	
@@ -69,6 +82,51 @@ public enum GlobalProcessor implements Processor
 		return new ReformatCodeProcessor(project, psiFiles, null, processChangedTextOnly)::run;
 	}
 	
+	@NotNull
+	private static Runnable reformatSurroundings(final PsiFile[] psiFiles)
+	{
+		return () -> {
+			for(final PsiFile psiFile : psiFiles)
+			{
+				final ChangedRangesInfo infos = VcsFacade.getInstance().getChangedRangesInfo(psiFile);
+				if(infos == null)
+				{
+					continue;
+				}
+				final List<TextRange> changedRanges = new ArrayList<>(infos.allChangedRanges);
+				if(infos.insertedRanges != null)
+				{
+					changedRanges.addAll(infos.insertedRanges);
+				}
+				final List<TextRange> upcastedRanges =
+					changedRanges.stream().map(it -> SmartVcsFilter.expandRange(it, psiFile)).toList();
+				final List<TextRange> mergedRanges = mergeRanges(upcastedRanges);
+				new ReformatCodeProcessor(psiFile, mergedRanges.toArray(new TextRange[0])).run();
+			}
+		};
+	}
+	
+	private static List<TextRange> mergeRanges(final Collection<TextRange> ranges)
+	{
+		final List<TextRange> mergedRanges = new ArrayList<>();
+		for(final TextRange range : ranges)
+		{
+			TextRange mergedRange = range;
+			final Iterator<TextRange> mergedRangesIterator = mergedRanges.iterator();
+			while(mergedRangesIterator.hasNext())
+			{
+				final TextRange mr = mergedRangesIterator.next();
+				if(mergedRange.intersects(mr))
+				{
+					mergedRangesIterator.remove();
+					mergedRange = mergedRange.union(mr);
+				}
+			}
+			mergedRanges.add(mergedRange);
+		}
+		return mergedRanges;
+	}
+	
 	private final Action action;
 	private final BiFunction<Project, PsiFile[], Runnable> command;
 	
@@ -97,7 +155,10 @@ public enum GlobalProcessor implements Processor
 	}
 	
 	@Override
-	public SaveWriteCommand getSaveCommand(final Project project, final Set<PsiFile> psiFiles)
+	public SaveWriteCommand getSaveCommand(
+		final Project project,
+		final Set<PsiFile> psiFiles,
+		final InspectionFilter filter)
 	{
 		return new SaveWriteCommand(project, psiFiles, this.getModes(), this.getAction(), this.getCommand());
 	}

@@ -27,6 +27,10 @@ public enum EpfAction
 		Action.reformatChangedCode,
 		EpfKey.format_source_code_changes_only),
 	
+	reformatChangedSurroundings(
+		Action.reformatChangedSurroundings,
+		EpfKey.format_source_code_changes_only),
+	
 	rearrange(
 		Action.rearrange,
 		EpfKey.sort_members, EpfKey.sort_members_all),

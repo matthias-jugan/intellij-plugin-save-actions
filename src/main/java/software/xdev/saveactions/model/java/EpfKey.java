@@ -27,6 +27,7 @@ public enum EpfKey
 	correct_indentation,
 	format_source_code,
 	format_source_code_changes_only,
+	format_source_code_changed_surroundings,
 	insert_inferred_type_arguments,
 	make_local_variable_final,
 	make_parameters_final,

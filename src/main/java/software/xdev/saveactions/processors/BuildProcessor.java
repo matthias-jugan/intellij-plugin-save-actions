@@ -30,6 +30,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 
 import software.xdev.saveactions.core.ExecutionMode;
+import software.xdev.saveactions.core.filter.InspectionFilter;
 import software.xdev.saveactions.core.service.SaveActionsServiceManager;
 import software.xdev.saveactions.model.Action;
 
@@ -100,7 +101,10 @@ public enum BuildProcessor implements Processor
 		})
 		{
 			@Override
-			public SaveCommand getSaveCommand(final Project project, final Set<PsiFile> psiFiles)
+			public SaveCommand getSaveCommand(
+				final Project project,
+				final Set<PsiFile> psiFiles,
+				final InspectionFilter filter)
 			{
 				return new SaveReadCommand(project, psiFiles, this.getModes(), this.getAction(), this.getCommand());
 			}
@@ -134,7 +138,9 @@ public enum BuildProcessor implements Processor
 	}
 	
 	@Override
-	public SaveCommand getSaveCommand(final Project project, final Set<PsiFile> psiFiles)
+	public SaveCommand getSaveCommand(
+		final Project project, final Set<PsiFile> psiFiles,
+		final InspectionFilter filter)
 	{
 		return new SaveWriteCommand(project, psiFiles, this.getModes(), this.getAction(), this.getCommand());
 	}

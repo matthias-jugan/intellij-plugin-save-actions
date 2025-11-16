@@ -31,6 +31,10 @@ import com.intellij.util.PsiErrorElementUtil;
 import com.intellij.util.ThrowableRunnable;
 
 import software.xdev.saveactions.core.ExecutionMode;
+import software.xdev.saveactions.core.filter.AllFilter;
+import software.xdev.saveactions.core.filter.InspectionFilter;
+import software.xdev.saveactions.core.filter.SmartVcsFilter;
+import software.xdev.saveactions.core.filter.VcsFilter;
 import software.xdev.saveactions.core.service.SaveActionsService;
 import software.xdev.saveactions.model.Action;
 import software.xdev.saveactions.model.Storage;
@@ -134,13 +138,30 @@ public class Engine
 		indicator.checkCanceled();
 		indicator.setText2("Collecting processors");
 		
+		final InspectionFilter inspectionFilter = this.getInspectionFilter();
 		final List<SaveCommand> processorsEligible = this.processors.stream()
-			.map(processor -> processor.getSaveCommand(this.project, psiFilesEligible))
+			.map(processor -> processor.getSaveCommand(this.project, psiFilesEligible, inspectionFilter))
 			.filter(command -> this.storage.isEnabled(command.getAction()))
 			.filter(command -> command.getModes().contains(this.mode))
 			.toList();
 		LOGGER.info(String.format("Filtered processors %s", processorsEligible));
 		return processorsEligible;
+	}
+	
+	private @NotNull InspectionFilter getInspectionFilter()
+	{
+		if(this.storage.isEnabled(Action.reformatChangedCode))
+		{
+			return VcsFilter.get();
+		}
+		else if(this.storage.isEnabled(Action.reformatChangedSurroundings))
+		{
+			return SmartVcsFilter.get();
+		}
+		else
+		{
+			return AllFilter.get();
+		}
 	}
 	
 	private void flushPsiFiles(

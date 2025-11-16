@@ -7,6 +7,7 @@ import static software.xdev.saveactions.model.Action.compile;
 import static software.xdev.saveactions.model.Action.customUnqualifiedStaticMemberAccess;
 import static software.xdev.saveactions.model.Action.reformat;
 import static software.xdev.saveactions.model.Action.reformatChangedCode;
+import static software.xdev.saveactions.model.Action.reformatChangedSurroundings;
 import static software.xdev.saveactions.model.Action.reload;
 import static software.xdev.saveactions.model.Action.unqualifiedStaticMemberAccess;
 
@@ -273,6 +274,8 @@ public class Configuration implements Configurable
 	{
 		this.updateCheckboxEnabledIfActiveSelected();
 		this.updateCheckboxGroupExclusive(event, reformat, reformatChangedCode);
+		this.updateCheckboxGroupExclusive(event, reformat, reformatChangedSurroundings);
+		this.updateCheckboxGroupExclusive(event, reformatChangedCode, reformatChangedSurroundings);
 		this.updateCheckboxGroupExclusive(event, compile, reload);
 		this.updateCheckboxGroupExclusive(event, unqualifiedStaticMemberAccess, customUnqualifiedStaticMemberAccess);
 	}
